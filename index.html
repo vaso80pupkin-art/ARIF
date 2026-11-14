@@ -48,6 +48,7 @@
   .tg { background: linear-gradient(160deg, var(--tg), var(--tg-deep)); }
   .wa { background: linear-gradient(160deg, var(--wa), var(--wa-deep)); }
   svg { width: 84px; height: 84px; fill: currentColor; }
+  .contact-name { font-size: clamp(20px, 6vw, 26px); font-weight: 650; letter-spacing: .01em; }
   .name { font-size: clamp(34px, 11vw, 56px); font-weight: 700; letter-spacing: -.02em; }
   .hint { font-size: 17px; opacity: .85; }
   .toast {
@@ -64,15 +65,17 @@
 </head>
 <body>
 <main>
-  <a class="choice tg" id="tg" href="tg://" data-web="https://web.telegram.org/">
+  <a class="choice tg" id="tg" href="https://t.me/+77759000795" data-web="https://t.me/+77759000795">
+    <span class="contact-name">Ариф</span>
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.9 4.3 18.7 19.5c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.4-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.6 13.3 1.9 11.8c-1-.3-1-1 .2-1.5L20.4 3.2c.9-.3 1.6.2 1.5 1.1z"/></svg>
     <span class="name">Telegram</span>
-    <span class="hint">Открыть приложение</span>
+    <span class="hint">Открыть чат с Арифом</span>
   </a>
-  <a class="choice wa" id="wa" href="https://wa.me/" data-web="https://web.whatsapp.com/">
+  <a class="choice wa" id="wa" href="https://wa.me/77759000795" data-web="https://wa.me/77759000795">
+    <span class="contact-name">Ариф</span>
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.500-.7-1.700-.8-.2-.1-.4-.1-.6.1-.2.2-.7.8-.8 1-.2.2-.3.2-.5.1-.8-.4-1.700-.9-2.400-1.800-.2-.3 0-.4.1-.5l.4-.5c.1-.1.100-.3.200-.4 0-.2 0-.3 0-.4l-.8-1.800c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.100-.7.300-.2.300-.9.900-.9 2.200s.9 2.500 1.100 2.700c.1.200 1.800 2.800 4.400 3.900 1.600.7 2.200.7 3 .6.500-.1 1.500-.6 1.700-1.200.2-.6.2-1.100.2-1.200-.1-.1-.3-.2-.5-.3z"/></svg>
     <span class="name">WhatsApp</span>
-    <span class="hint">Открыть чат (долгое нажатие: сменить номер)</span>
+    <span class="hint">Открыть чат с Арифом</span>
   </a>
 </main>
 
@@ -82,12 +85,11 @@
   var isAndroid = /Android/i.test(navigator.userAgent);
   var toast = document.getElementById('toast');
 
-  // На Android используем intent-ссылку: t.me/ без имени чата ведёт на сайт Telegram.
-  // На iPhone остаётся схема tg:// для прямого запуска приложения.
+  // На Android используем intent-ссылку с телефоном для прямого открытия чата.
   if (isAndroid) {
     document.getElementById('tg').href =
-      'intent://resolve#Intent;scheme=tg;package=org.telegram.messenger;' +
-      'S.browser_fallback_url=' + encodeURIComponent('https://play.google.com/store/apps/details?id=org.telegram.messenger') + ';end';
+      'intent://resolve?phone=77759000795#Intent;scheme=tg;package=org.telegram.messenger;' +
+      'S.browser_fallback_url=' + encodeURIComponent('https://t.me/+77759000795') + ';end';
   }
 
   // Подсказка только если приложение точно не открылось.
@@ -112,32 +114,6 @@
     });
   }
 
-  // WhatsApp не открывается «просто так»: ему нужен чат. Открываем чат с сохранённым номером
-  // (можно указать свой: тогда откроется «Сообщения себе»).
-  function waLink(num) {
-    return 'https://wa.me/' + num;
-  }
-  function getNum(force) {
-    var n = '';
-    try { n = localStorage.getItem('wa_num') || ''; } catch (e) {}
-    if (!n || force) {
-      var v = prompt('Номер для чата WhatsApp, с кодом страны, например 79001234567. Можно свой.', n);
-      if (v === null) return '';
-      n = v.replace(/\D/g, '');
-      try { localStorage.setItem('wa_num', n); } catch (e) {}
-    }
-    return n;
-  }
-  document.getElementById('wa').addEventListener('click', function (e) {
-    e.preventDefault();
-    var n = getNum(false);
-    if (n) window.location.href = waLink(n);
-  });
-  document.getElementById('wa').addEventListener('contextmenu', function (e) {
-    e.preventDefault();
-    var n = getNum(true);
-    if (n) window.location.href = waLink(n);
-  });
   attach('tg', 'Telegram');
   attach('wa', 'WhatsApp');
 </script>
