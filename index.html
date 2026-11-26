@@ -18,7 +18,7 @@
     --ink: #ffffff;
   }
   * { box-sizing: border-box; margin: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; }
+  html, body { width: 100%; height: 100%; }
   body {
     font-family: -apple-system, "SF Pro Text", system-ui, "Helvetica Neue", Arial, sans-serif;
     background: #0b1a24;
@@ -26,11 +26,19 @@
     overflow: hidden;
   }
   main {
+    width: 100%;
     height: 100%;
+    height: 100dvh;
     display: grid;
     grid-template-rows: 1fr 1fr;
   }
+  .panel { position: relative; min-height: 0; overflow: hidden; }
+  .tg-panel { background: linear-gradient(160deg, var(--tg), var(--tg-deep)); }
+  .wa-panel { background: linear-gradient(160deg, var(--wa), var(--wa-deep)); }
   a.choice {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -39,20 +47,83 @@
     color: var(--ink);
     text-decoration: none;
     text-align: center;
-    padding: env(safe-area-inset-top, 0px) 24px 0;
+    padding: env(safe-area-inset-top, 0px) 24px env(safe-area-inset-bottom, 0px);
     transition: filter .15s, transform .15s;
   }
-  a.choice:last-child { padding: 0 24px env(safe-area-inset-bottom, 0px); }
   a.choice:active { filter: brightness(.9); transform: scale(.985); }
-  a.choice:focus-visible { outline: 4px solid #fff; outline-offset: -8px; }
-  .tg { background: linear-gradient(160deg, var(--tg), var(--tg-deep)); }
-  .wa { background: linear-gradient(160deg, var(--wa), var(--wa-deep)); }
-  svg { width: 84px; height: 84px; fill: currentColor; }
+  a.choice:focus-visible, .qr-toggle:focus-visible { outline: 4px solid #fff; outline-offset: -7px; }
+  .choice svg { width: 84px; height: 84px; fill: currentColor; }
   .contact-name { font-size: clamp(20px, 6vw, 26px); font-weight: 650; letter-spacing: .01em; }
   .name { font-size: clamp(34px, 11vw, 56px); font-weight: 700; letter-spacing: -.02em; }
   .hint { font-size: 17px; opacity: .85; }
+
+  .qr-toggle {
+    position: absolute;
+    z-index: 4;
+    top: calc(14px + env(safe-area-inset-top, 0px));
+    right: calc(14px + env(safe-area-inset-right, 0px));
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    border: 2px solid rgba(255,255,255,.85);
+    border-radius: 50%;
+    color: #fff;
+    background: rgba(6, 18, 27, .25);
+    font: inherit;
+    cursor: pointer;
+    transition: background .2s, box-shadow .2s, border-color .2s, transform .2s;
+    touch-action: manipulation;
+  }
+  .qr-toggle span { font-weight: 800; font-size: 18px; letter-spacing: .04em; }
+  .qr-toggle:active { transform: scale(.94); }
+  .qr-toggle[aria-pressed="true"] {
+    border-color: #fff;
+    background: rgba(255,255,255,.24);
+    box-shadow: 0 0 10px 3px rgba(255,255,255,.9), 0 0 28px 8px rgba(255,255,255,.55);
+    animation: qr-pulse 1.8s ease-in-out infinite alternate;
+  }
+  @keyframes qr-pulse {
+    from { box-shadow: 0 0 9px 2px rgba(255,255,255,.72), 0 0 20px 5px rgba(255,255,255,.36); }
+    to { box-shadow: 0 0 13px 4px rgba(255,255,255,1), 0 0 32px 10px rgba(255,255,255,.68); }
+  }
+
+  .qr-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    padding: 70px 16px 16px;
+    background: rgba(3, 17, 25, .30);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+  .qr-overlay[hidden] { display: none; }
+  .qr-card {
+    width: min(278px, calc(100vw - 40px));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px 16px;
+    border-radius: 22px;
+    background: #fff;
+    color: #13202a;
+    text-align: center;
+    box-shadow: 0 12px 40px rgba(0,0,0,.28);
+  }
+  .qr-card img {
+    display: block;
+    width: clamp(150px, 38vh, 220px);
+    max-width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+  }
+  .qr-title { font-size: 18px; font-weight: 750; }
+  .qr-hint { font-size: 13px; line-height: 1.3; color: #53616b; }
   .toast {
-    position: fixed; left: 16px; right: 16px;
+    position: fixed; z-index: 10; left: 16px; right: 16px;
     bottom: calc(16px + env(safe-area-inset-bottom, 0px));
     background: rgba(0,0,0,.82); color: #fff;
     padding: 14px 16px; border-radius: 14px;
@@ -60,23 +131,52 @@
     display: none;
   }
   .toast.show { display: block; }
-  .toast a { color: #8fd3ff; }
+  @media (max-height: 500px) {
+    .choice { gap: 7px; }
+    .choice svg { width: 52px; height: 52px; }
+    .name { font-size: clamp(28px, 8vh, 40px); }
+    .contact-name { font-size: 17px; }
+    .hint { font-size: 14px; }
+    .qr-card { gap: 5px; padding: 8px 12px 10px; }
+    .qr-card img { width: clamp(128px, 34vh, 180px); }
+  }
 </style>
 </head>
 <body>
 <main>
-  <a class="choice tg" id="tg" href="https://t.me/+77057727991" data-web="https://t.me/+77057727991">
-    <span class="contact-name">Архитектор СДЕЛОК</span>
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.9 4.3 18.7 19.5c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.4-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.6 13.3 1.9 11.8c-1-.3-1-1 .2-1.5L20.4 3.2c.9-.3 1.6.2 1.5 1.1z"/></svg>
-    <span class="name">Telegram</span>
-    <span class="hint">Открыть чат</span>
-  </a>
-  <a class="choice wa" id="wa" href="https://wa.me/77759000795" data-web="https://wa.me/77759000795">
-    <span class="contact-name">Архитектор СДЕЛОК</span>
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.500-.7-1.700-.8-.2-.1-.4-.1-.6.1-.2.2-.7.8-.8 1-.2.2-.3.2-.5.1-.8-.4-1.700-.9-2.400-1.800-.2-.3 0-.4.1-.5l.4-.5c.1-.1.100-.3.200-.4 0-.2 0-.3 0-.4l-.8-1.800c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.100-.7.300-.2.300-.9.900-.9 2.200s.9 2.500 1.100 2.700c.1.200 1.800 2.800 4.400 3.900 1.600.7 2.200.7 3 .6.500-.1 1.500-.6 1.700-1.200.2-.6.2-1.100.2-1.200-.1-.1-.3-.2-.5-.3z"/></svg>
-    <span class="name">WhatsApp</span>
-    <span class="hint">Открыть чат</span>
-  </a>
+  <section class="panel tg-panel" aria-label="Telegram">
+    <a class="choice" id="tg" href="https://t.me/+77057727991" data-web="https://t.me/+77057727991">
+      <span class="contact-name">Архитектор СДЕЛОК</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.9 4.3 18.7 19.5c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.4-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.6 13.3 1.9 11.8c-1-.3-1-1 .2-1.5L20.4 3.2c.9-.3 1.6.2 1.5 1.1z"/></svg>
+      <span class="name">Telegram</span>
+      <span class="hint">Открыть чат</span>
+    </a>
+    <button class="qr-toggle" id="tg-qr-toggle" type="button" aria-label="Показать QR-код Telegram" aria-controls="tg-qr-view" aria-pressed="false"><span>QR</span></button>
+    <div class="qr-overlay" id="wa-qr-view" role="region" aria-label="QR-код WhatsApp" aria-live="polite" hidden>
+      <div class="qr-card">
+        <img src="qr-whatsapp.png" alt="QR-код для чата WhatsApp">
+        <span class="qr-title">WhatsApp</span>
+        <span class="qr-hint">Отсканируйте код, чтобы открыть чат</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel wa-panel" aria-label="WhatsApp">
+    <a class="choice" id="wa" href="https://wa.me/77759000795" data-web="https://wa.me/77759000795">
+      <span class="contact-name">Архитектор СДЕЛОК</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.500-.7-1.700-.8-.2-.1-.4-.1-.6.1-.2.2-.7.8-.8 1-.2.2-.3.2-.5.1-.8-.4-1.700-.9-2.400-1.800-.2-.3 0-.4.1-.5l.4-.5c.1-.1.100-.3.200-.4 0-.2 0-.3 0-.4l-.8-1.800c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.100-.7.300-.2.300-.9.900-.9 2.200s.9 2.500 1.100 2.700c.1.200 1.800 2.800 4.400 3.900 1.600.7 2.200.7 3 .6.500-.1 1.500-.6 1.700-1.200.2-.6.2-1.100.2-1.200-.1-.1-.3-.2-.5-.3z"/></svg>
+      <span class="name">WhatsApp</span>
+      <span class="hint">Открыть чат</span>
+    </a>
+    <button class="qr-toggle" id="wa-qr-toggle" type="button" aria-label="Показать QR-код WhatsApp" aria-controls="wa-qr-view" aria-pressed="false"><span>QR</span></button>
+    <div class="qr-overlay" id="tg-qr-view" role="region" aria-label="QR-код Telegram" aria-live="polite" hidden>
+      <div class="qr-card">
+        <img src="qr-telegram.png" alt="QR-код для чата Telegram">
+        <span class="qr-title">Telegram</span>
+        <span class="qr-hint">Отсканируйте код, чтобы открыть чат</span>
+      </div>
+    </div>
+  </section>
 </main>
 
 <div class="toast" id="toast" role="status"></div>
@@ -91,6 +191,30 @@
       'intent://resolve?phone=77057727991#Intent;scheme=tg;package=org.telegram.messenger;' +
       'S.browser_fallback_url=' + encodeURIComponent('https://t.me/+77057727991') + ';end';
   }
+
+  // QR каждой кнопки показывается в противоположной половине экрана.
+  var activeQr = null;
+  var qrControls = {
+    telegram: { button: document.getElementById('tg-qr-toggle'), view: document.getElementById('tg-qr-view') },
+    whatsapp: { button: document.getElementById('wa-qr-toggle'), view: document.getElementById('wa-qr-view') }
+  };
+  function setActiveQr(name) {
+    activeQr = name;
+    Object.keys(qrControls).forEach(function (key) {
+      var control = qrControls[key];
+      var active = key === activeQr;
+      control.button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      control.view.hidden = !active;
+    });
+  }
+  Object.keys(qrControls).forEach(function (key) {
+    qrControls[key].button.addEventListener('click', function () {
+      setActiveQr(activeQr === key ? null : key);
+    });
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && activeQr) setActiveQr(null);
+  });
 
   // Подсказка только если приложение точно не открылось.
   function attach(id, title) {
