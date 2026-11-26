@@ -72,21 +72,31 @@
     background: rgba(6, 18, 27, .25);
     font: inherit;
     cursor: pointer;
-    transition: background .2s, box-shadow .2s, border-color .2s, transform .2s;
+    isolation: isolate;
+    transition: background .28s ease, box-shadow .28s ease, border-color .28s ease, transform .2s ease;
     touch-action: manipulation;
+  }
+  .qr-toggle::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -8px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,.9) 0%, rgba(255,255,255,.5) 38%, rgba(255,255,255,0) 72%);
+    filter: blur(6px);
+    opacity: 0;
+    transform: scale(.72);
+    transition: opacity .32s ease, transform .38s cubic-bezier(.2,.75,.25,1);
+    pointer-events: none;
   }
   .qr-toggle span { font-weight: 800; font-size: 18px; letter-spacing: .04em; }
   .qr-toggle:active { transform: scale(.94); }
   .qr-toggle[aria-pressed="true"] {
     border-color: #fff;
     background: rgba(255,255,255,.24);
-    box-shadow: 0 0 10px 3px rgba(255,255,255,.9), 0 0 28px 8px rgba(255,255,255,.55);
-    animation: qr-pulse 1.8s ease-in-out infinite alternate;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.72), inset 0 0 12px rgba(255,255,255,.22);
   }
-  @keyframes qr-pulse {
-    from { box-shadow: 0 0 9px 2px rgba(255,255,255,.72), 0 0 20px 5px rgba(255,255,255,.36); }
-    to { box-shadow: 0 0 13px 4px rgba(255,255,255,1), 0 0 32px 10px rgba(255,255,255,.68); }
-  }
+  .qr-toggle[aria-pressed="true"]::before { opacity: 1; transform: scale(1.12); }
 
   .qr-overlay {
     position: absolute;
@@ -94,14 +104,17 @@
     z-index: 2;
     display: grid;
     place-items: center;
-    padding: 70px 16px 16px;
+    padding: 60px 12px 10px;
     background: rgba(3, 17, 25, .30);
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .34s ease, visibility 0s linear .34s;
   }
-  .qr-overlay[hidden] { display: none; }
+  .qr-overlay.is-visible { opacity: 1; visibility: visible; transition-delay: 0s; }
   .qr-card {
-    width: min(278px, calc(100vw - 40px));
+    width: min(300px, calc(100vw - 32px));
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -112,10 +125,14 @@
     color: #13202a;
     text-align: center;
     box-shadow: 0 12px 40px rgba(0,0,0,.28);
+    opacity: 0;
+    transform: translateY(14px) scale(.92);
+    transition: opacity .32s ease, transform .38s cubic-bezier(.2,.75,.25,1);
   }
+  .qr-overlay.is-visible .qr-card { opacity: 1; transform: translateY(0) scale(1); }
   .qr-card img {
     display: block;
-    width: clamp(150px, 38vh, 220px);
+    width: min(236px, 31vh, calc(100vw - 80px));
     max-width: 100%;
     height: auto;
     image-rendering: pixelated;
@@ -140,6 +157,9 @@
     .qr-card { gap: 5px; padding: 8px 12px 10px; }
     .qr-card img { width: clamp(128px, 34vh, 180px); }
   }
+  @media (prefers-reduced-motion: reduce) {
+    .qr-toggle, .qr-toggle::before, .qr-overlay, .qr-card { transition-duration: .01ms !important; }
+  }
 </style>
 </head>
 <body>
@@ -152,9 +172,9 @@
       <span class="hint">Открыть чат</span>
     </a>
     <button class="qr-toggle" id="tg-qr-toggle" type="button" aria-label="Показать QR-код Telegram" aria-controls="tg-qr-view" aria-pressed="false"><span>QR</span></button>
-    <div class="qr-overlay" id="wa-qr-view" role="region" aria-label="QR-код WhatsApp" aria-live="polite" hidden>
+    <div class="qr-overlay" id="wa-qr-view" role="region" aria-label="QR-код WhatsApp" aria-live="polite" aria-hidden="true">
       <div class="qr-card">
-        <img src="qr-whatsapp.png" alt="QR-код для чата WhatsApp">
+        <img src="qr-whatsapp.png?v=qr-a4729d1" alt="QR-код для чата WhatsApp">
         <span class="qr-title">WhatsApp</span>
         <span class="qr-hint">Отсканируйте код, чтобы открыть чат</span>
       </div>
@@ -169,9 +189,9 @@
       <span class="hint">Открыть чат</span>
     </a>
     <button class="qr-toggle" id="wa-qr-toggle" type="button" aria-label="Показать QR-код WhatsApp" aria-controls="wa-qr-view" aria-pressed="false"><span>QR</span></button>
-    <div class="qr-overlay" id="tg-qr-view" role="region" aria-label="QR-код Telegram" aria-live="polite" hidden>
+    <div class="qr-overlay" id="tg-qr-view" role="region" aria-label="QR-код Telegram" aria-live="polite" aria-hidden="true">
       <div class="qr-card">
-        <img src="qr-telegram.png" alt="QR-код для чата Telegram">
+        <img src="qr-telegram.png?v=qr-a4729d1" alt="QR-код для чата Telegram">
         <span class="qr-title">Telegram</span>
         <span class="qr-hint">Отсканируйте код, чтобы открыть чат</span>
       </div>
@@ -204,7 +224,9 @@
       var control = qrControls[key];
       var active = key === activeQr;
       control.button.setAttribute('aria-pressed', active ? 'true' : 'false');
-      control.view.hidden = !active;
+      control.button.setAttribute('aria-label', (active ? 'Скрыть QR-код ' : 'Показать QR-код ') + (key === 'telegram' ? 'Telegram' : 'WhatsApp'));
+      control.view.classList.toggle('is-visible', active);
+      control.view.setAttribute('aria-hidden', active ? 'false' : 'true');
     });
   }
   Object.keys(qrControls).forEach(function (key) {
